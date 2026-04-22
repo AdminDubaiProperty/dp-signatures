@@ -90,8 +90,5 @@ export const DEFAULT_SIGNATURE_DATA: SignatureData = {
 // Excluded team members (inactive/departed)
 export const EXCLUDED_SLUGS = new Set([
   'sandora-wirjasentana',
-  'kelvin-lala',
-  'yokechia-baumgard',
   'yassin-el-kholy',
-  'samar-doebar',
 ]);

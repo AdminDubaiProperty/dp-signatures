@@ -275,6 +275,28 @@
     "rank": 30
   },
   {
+    "id": "alex001",
+    "name": "Alexander",
+    "designation": "Recruitment Consultant",
+    "email": "alexander@dubai-property.nl",
+    "phone": "",
+    "about": "Als Recruitment Consultant bij Dubai-Property.nl zorg ik voor het vinden en begeleiden van de juiste talenten voor ons team.",
+    "photo": "/photos/alexander.png",
+    "slug": "alexander",
+    "rank": 32
+  },
+  {
+    "id": "fianna001",
+    "name": "Fianna",
+    "designation": "Personal Assistant",
+    "email": "fianna@dubai-property.nl",
+    "phone": "",
+    "about": "Als Personal Assistant ondersteun ik Priscilla en Sandjai bij dagelijkse werkzaamheden en zorg ik voor een vlekkeloze organisatie.",
+    "photo": "/photos/fianna.png",
+    "slug": "fianna",
+    "rank": 33
+  },
+  {
     "id": "69b41c41584989a32f24c3f2",
     "name": "Mohammed Sabbar",
     "designation": "Real Estate Consultant",
