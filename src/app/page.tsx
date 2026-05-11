@@ -1,17 +1,26 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { TeamMember, SignatureData, SavedSignature } from '@/types';
 import { generateSignatureHtml, DEFAULT_SIGNATURE_DATA, EXCLUDED_SLUGS } from '@/lib/signature-template';
-import { getSavedSignatures, saveSignature, updateSignature, deleteSignature } from '@/lib/storage';
+import {
+  applyTeamOverrides,
+  getSavedSignatures,
+  getTeamOverrides,
+  saveSignature,
+  saveTeamOverride,
+  TeamOverrides,
+  updateSignature,
+  deleteSignature,
+} from '@/lib/storage';
+import { DUBAI_PROPERTY_LOGO_URL } from '@/lib/constants';
 import teamDataJson from '@/team-data.json';
 
-const allTeam: TeamMember[] = (teamDataJson as TeamMember[])
+const baseTeam: TeamMember[] = (teamDataJson as TeamMember[])
   .filter((m) => !EXCLUDED_SLUGS.has(m.slug))
   .sort((a, b) => a.rank - b.rank);
 
-const PLACEHOLDER_PHOTO =
-  'https://cdn.prod.website-files.com/663dca2d822c7860e89c4c5a/69cd2042f60117ec2c2abcd6_Dubai-Property%20Gold%20BG%20logo%20Brandmark.png';
+const PLACEHOLDER_PHOTO = DUBAI_PROPERTY_LOGO_URL;
 
 // ─── Step indicator ──────────────────────────────────
 function Steps({ current }: { current: number }) {
@@ -133,22 +142,22 @@ function MiniSignatureCard({
 // ─── Main ────────────────────────────────────────────
 export default function Home() {
   const [formData, setFormData] = useState<SignatureData>(DEFAULT_SIGNATURE_DATA);
-  const [savedList, setSavedList] = useState<SavedSignature[]>([]);
+  const [savedList, setSavedList] = useState<SavedSignature[]>(() => getSavedSignatures());
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [teamOverrides, setTeamOverrides] = useState<TeamOverrides>(() => getTeamOverrides());
   const [toast, setToast] = useState('');
   const [search, setSearch] = useState('');
   const [showSaved, setShowSaved] = useState(false);
 
-  useEffect(() => {
-    setSavedList(getSavedSignatures());
-  }, []);
+  const allTeam = useMemo(() => applyTeamOverrides(baseTeam, teamOverrides), [teamOverrides]);
 
   const filteredTeam = useMemo(
     () =>
       search
         ? allTeam.filter((m) => m.name.toLowerCase().includes(search.toLowerCase()))
         : allTeam,
-    [search],
+    [search, allTeam],
   );
 
   const currentStep = formData.name ? 2 : 0;
@@ -168,25 +177,42 @@ export default function Home() {
       email: m.email,
       photoUrl: m.photo || PLACEHOLDER_PHOTO,
     });
+    setSelectedMemberId(m.id);
     setEditingId(null);
   }, []);
 
   const loadSaved = useCallback((sig: SavedSignature) => {
-    setFormData(sig.data);
+    setFormData({
+      ...sig.data,
+      photoUrl: sig.data.photoUrl || PLACEHOLDER_PHOTO,
+    });
+    setSelectedMemberId(allTeam.find((m) => m.email === sig.data.email)?.id || null);
     setEditingId(sig.id);
-  }, []);
+  }, [allTeam]);
 
   const handleSave = useCallback(() => {
     if (!formData.name) return;
+
+    const normalizedData = {
+      ...formData,
+      photoUrl: formData.photoUrl?.trim() || PLACEHOLDER_PHOTO,
+    };
+
+    if (selectedMemberId) {
+      setTeamOverrides(saveTeamOverride(selectedMemberId, normalizedData));
+    }
+
     if (editingId) {
-      updateSignature(editingId, formData.name, formData);
+      updateSignature(editingId, normalizedData.name, normalizedData);
     } else {
-      const s = saveSignature(formData.name, formData);
+      const s = saveSignature(normalizedData.name, normalizedData);
       setEditingId(s.id);
     }
+
+    setFormData(normalizedData);
     setSavedList(getSavedSignatures());
-    flash('Signature saved');
-  }, [formData, editingId]);
+    flash('Saved everywhere in this app');
+  }, [formData, editingId, selectedMemberId]);
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -195,6 +221,7 @@ export default function Home() {
       if (editingId === id) {
         setEditingId(null);
         setFormData(DEFAULT_SIGNATURE_DATA);
+        setSelectedMemberId(null);
       }
     },
     [editingId],

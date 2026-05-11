@@ -1,6 +1,15 @@
 import { SignatureData } from '@/types';
+import { DUBAI_PROPERTY_LOGO_URL } from '@/lib/constants';
 
 export function generateSignatureHtml(data: SignatureData): string {
+  const photoUrl = data.photoUrl?.trim() || DUBAI_PROPERTY_LOGO_URL;
+  const phoneRow = data.phone?.trim()
+    ? `<tr>
+               <td width="24" valign="middle"><img src="https://api.iconify.design/lucide/phone.svg?color=%23B99A61" width="16" height="16" style="display: block;" alt="Phone"></td>
+               <td class="sig-text" style="color: #1C1A17;">${data.phone}</td>
+             </tr>`
+    : '';
+
   return `<style type="text/css">
  :root { color-scheme: light dark; supported-color-schemes: light dark; }
  @media (prefers-color-scheme: dark) {
@@ -13,7 +22,7 @@ export function generateSignatureHtml(data: SignatureData): string {
 <table class="sig-bg" cellpadding="0" cellspacing="0" border="0" style="max-width: 700px; font-family: 'Gilmer', 'Gilmer Sans', Arial, sans-serif; background-color: #F9F9F9; padding: 20px; border-radius: 8px;">
  <tr>
    <td width="140" align="center" valign="middle" style="padding-right: 20px;">
-     <img src="${data.photoUrl}" alt="${data.name}" width="110" height="110" style="border-radius: 50%; border: 4px solid #B99A61; padding: 4px; display: block; object-fit: cover;" class="sig-bg">
+     <img src="${photoUrl}" alt="${data.name}" width="110" height="110" style="border-radius: 50%; border: 4px solid #B99A61; padding: 4px; display: block; object-fit: cover;" class="sig-bg">
    </td>
    <td width="2" style="background-color: #8D724A;"></td>
    <td valign="middle" style="padding-left: 20px; padding-right: 20px;">
@@ -27,10 +36,7 @@ export function generateSignatureHtml(data: SignatureData): string {
        <tr>
          <td style="padding-top: 10px;">
            <table cellpadding="0" cellspacing="0" border="0" style="font-size: 12px; line-height: 20px;">
-             <tr>
-               <td width="24" valign="middle"><img src="https://api.iconify.design/lucide/phone.svg?color=%23B99A61" width="16" height="16" style="display: block;" alt="Phone"></td>
-               <td class="sig-text" style="color: #1C1A17;">${data.phone}</td>
-             </tr>
+             ${phoneRow}
              <tr>
                <td width="24" valign="middle"><img src="https://api.iconify.design/lucide/mail.svg?color=%23B99A61" width="16" height="16" style="display: block;" alt="Email"></td>
                <td><a href="mailto:${data.email}" class="sig-link" style="color: #1C1A17; text-decoration: none;">${data.email}</a></td>
@@ -79,7 +85,7 @@ export const DEFAULT_SIGNATURE_DATA: SignatureData = {
   designation: '',
   phone: '',
   email: '',
-  photoUrl: '',
+  photoUrl: DUBAI_PROPERTY_LOGO_URL,
   website: 'www.dubai-property.nl',
   address: 'Bahialaan 602-A, 3065 WC Rotterdam',
   facebook: 'https://www.facebook.com/DubaiPropertyNL',
